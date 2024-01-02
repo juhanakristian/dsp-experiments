@@ -7,7 +7,7 @@ def generate_wavetable(sample_count: int) -> list[float]:
     :return: A list of samples between -1 and 1
     """
     wavetable = [
-        1 if i == 0 else 0
+        1 if i < 10 else 0
         for i in range(sample_count)
     ]
     return wavetable
