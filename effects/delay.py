@@ -6,26 +6,38 @@ SAMPLE_RATE = 48000
 
 sample_rate, samples = read("input.wav")
 
-def process(samples: list[float], amount: float, attenuation: float = 0.8) -> list[float]:
+DELAY_LINE_SIZE = SAMPLE_RATE * 2
+
+def process(samples: list[float], mix: float = 0.8) -> list[float]:
     """
     Simple delay
     :param samples: A list of samples between -1 and 1
     :return: A list of samples between -1 and 1
     """
     output = []
-    sample_amount = round(amount * sample_rate)
+    delay_line = [0] * DELAY_LINE_SIZE
+    feedback = 0.8
+    dry_mix = 1 - mix
+    delay_index = 0
     for i, sample in enumerate(samples):
-        delayed_sample = samples[i - sample_amount] if i - sample_amount > 0 else 0
-        #value = sample + delayed_sample * attenuation
-        value = min(max(sample + delayed_sample * attenuation, -1), 1)
+        # Get value from delay line and mix it with sample value
+        delayed_value = delay_line[delay_index]
+        value = (sample * dry_mix) + (delayed_value * mix)
         output.append(value)
+
+        # Update delay line
+        delay_line[delay_index] = (sample + delayed_value) * feedback
+        delay_index += 1
+        if delay_index >= DELAY_LINE_SIZE:
+            delay_index = 0
 
     return output
 
 
 def main() -> None:
-    processed_samples = np.array(process(samples, 0.24, 0.4))
-    write("output-delay.wav", SAMPLE_RATE, processed_samples.astype(np.int16))
+    processed_samples = np.array(process(samples, 0.4))
+    scaled_samples = np.int16(processed_samples * 32767)
+    write("output-delay.wav", SAMPLE_RATE, scaled_samples)
     plt.plot(processed_samples)
     plt.show()
 

@@ -23,6 +23,7 @@ def init_argparse() -> argparse.ArgumentParser:
     parser.add_argument("--wave", type=str, default="sine", help="The type of wave to generate")
     parser.add_argument("--frequency", type=int, default=440, help="The frequency of the wave")
     parser.add_argument("--duration", type=int, default=1, help="The duration of the wave in seconds")
+    parser.add_argument("--oneoff", type=bool, default=False, help="Whether to generate a one-off wave or not")
 
     return parser
 
@@ -54,8 +55,13 @@ def main() -> None:
     elif args.wave == "impulse":
         wavetable = impulse.generate_wavetable(1000)
 
-    samples = np.array(generate(args.frequency, args.duration, wavetable))
-    write(args.output, SAMPLE_RATE, samples.astype(np.int16))
+    if not args.oneoff:
+        samples = np.array(generate(args.frequency, args.duration, wavetable))
+    else:
+        rest = [0] * (SAMPLE_RATE * args.duration)
+        samples = np.array(wavetable + rest)
+    scaled_samples = np.int16(samples * 32767)
+    write(args.output, SAMPLE_RATE, scaled_samples)
     plt.plot(wavetable)
     plt.show()
 
