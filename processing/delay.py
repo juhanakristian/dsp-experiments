@@ -1,10 +1,5 @@
-from scipy.io.wavfile import read, write
-import numpy as np
-import matplotlib.pyplot as plt
 
 SAMPLE_RATE = 48000
-
-sample_rate, samples = read("input.wav")
 
 DELAY_LINE_SIZE = SAMPLE_RATE * 2
 
@@ -32,18 +27,5 @@ def process(samples: list[float], mix: float = 0.8) -> list[float]:
             delay_index = 0
 
     return output
-
-
-def main() -> None:
-    processed_samples = np.array(process(samples, 0.4))
-    scaled_samples = np.int16(processed_samples * 32767)
-    write("output-delay.wav", SAMPLE_RATE, scaled_samples)
-    plt.plot(processed_samples)
-    plt.show()
-
-
-if __name__ == "__main__":
-    main()
-
 
 
