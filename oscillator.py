@@ -58,9 +58,9 @@ def main() -> None:
     elif args.wave == "impulse":
         wavetable = impulse.generate_wavetable(sample_count)
     elif args.wave == "noise":
-        wavetable = noise.generate_waveform(sample_count)
+        wavetable = noise.generate_waveform(SAMPLE_RATE * args.duration)
 
-    if not args.oneoff:
+    if not args.oneoff and args.wave != "noise":
         samples = np.array(generate(args.frequency, args.duration, wavetable))
     else:
         rest = [0] * (SAMPLE_RATE * args.duration)
