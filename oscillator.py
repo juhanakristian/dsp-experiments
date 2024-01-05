@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 
+import noise
 import sine
 import square
 import impulse
@@ -47,19 +48,24 @@ def main() -> None:
     parser = init_argparse()
     args = parser.parse_args()
 
+    sample_count = 1024
+
     wavetable = []
     if args.wave == "sine":
-        wavetable = sine.generate_wavetable(1000)
+        wavetable = sine.generate_wavetable(sample_count)
     elif args.wave == "square":
-        wavetable = square.generate_wavetable(1000)
+        wavetable = square.generate_wavetable(sample_count)
     elif args.wave == "impulse":
-        wavetable = impulse.generate_wavetable(1000)
+        wavetable = impulse.generate_wavetable(sample_count)
+    elif args.wave == "noise":
+        wavetable = noise.generate_waveform(sample_count)
 
     if not args.oneoff:
         samples = np.array(generate(args.frequency, args.duration, wavetable))
     else:
         rest = [0] * (SAMPLE_RATE * args.duration)
         samples = np.array(wavetable + rest)
+
     scaled_samples = np.int16(samples * 32767)
     write(args.output, SAMPLE_RATE, scaled_samples)
     plt.plot(wavetable)
