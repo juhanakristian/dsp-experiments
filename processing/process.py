@@ -5,8 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from delay import process as delay
-from envelope import process as envelope
-from envelope import ADSR
+from generative.envelope import process as envelope
+from generative.envelope import ADSR
 
 SAMPLE_RATE = 48000
 

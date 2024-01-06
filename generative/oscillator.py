@@ -7,6 +7,7 @@ import noise
 import sine
 import square
 import impulse
+import sawtooth
 
 SAMPLE_RATE = 48000
 
@@ -54,7 +55,9 @@ def main() -> None:
     if args.wave == "sine":
         wavetable = sine.generate_wavetable(sample_count)
     elif args.wave == "square":
-        wavetable = square.generate_wavetable(sample_count)
+        wavetable = square.simple_square(sample_count)
+    elif args.wave == "sawtooth":
+        wavetable = sawtooth.simple_sawtooth(sample_count)
     elif args.wave == "impulse":
         wavetable = impulse.generate_wavetable(sample_count)
     elif args.wave == "noise":
