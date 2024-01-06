@@ -38,7 +38,7 @@ def generate(frequency: int, duration: int, wavetable: list[float]) -> list[floa
     step = frequency * (len(wavetable) / SAMPLE_RATE)
     amplitude = np.iinfo(np.int16).max
     for i in range(sample_count):
-        samples.append(wavetable[int(phase)] * amplitude)
+        samples.append(wavetable[int(phase)])
         phase += step
         phase %= len(wavetable)
 
@@ -57,7 +57,7 @@ def main() -> None:
     elif args.wave == "square":
         wavetable = square.simple_square(sample_count)
     elif args.wave == "sawtooth":
-        wavetable = sawtooth.bandlimited_waveform(sample_count)
+        wavetable = sawtooth.generate(args.frequency)
     elif args.wave == "impulse":
         wavetable = impulse.generate_wavetable(sample_count)
     elif args.wave == "noise":

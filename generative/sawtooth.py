@@ -1,55 +1,57 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+from wavetable import create_wavetable
 
-def bandlimit_waveform(waveform_samples, sample_rate, nyquist):
-    fft_result = np.fft.fft(waveform_samples)
-    freqs = np.fft.fftfreq(len(waveform_samples), d=1/sample_rate)
+SAMPLE_COUNT = 2048
+SAMPLING_RATE = 48000
 
-    # Zeroing frequencies above the specified Nyquist frequency
-    fft_result[np.abs(freqs) > nyquist] = 0
-
-    # Inverse FFT to get the time-domain waveform
-    bandlimited_waveform = np.fft.ifft(fft_result)
-    return np.real(bandlimited_waveform)  # Taking the real part
-
-def create_wavetable(waveform_samples, sample_rate, levels):
-    wavetable = []
-    base_nyquist = sample_rate / 2
-
-    for level in range(levels):
-        nyquist = base_nyquist / (2 ** level)
-        bandlimited_waveform = bandlimit_waveform(waveform_samples, sample_rate, nyquist)
-        wavetable.append(bandlimited_waveform)
-
-    return wavetable
-
-def simple_waveform(sample_count: int) -> list[float]:
+def simple_waveform() -> list[float]:
     """
     Generate square waveform
     :param sample_count: Number of samples
     :return: A list of samples between -1 and 1
     """
     waveform = []
-    step = 2.0 / sample_count
-    for i in range(sample_count):
-        value = 1 - (i * step)
+    step = 1.0 / SAMPLE_COUNT
+    for i in range(SAMPLE_COUNT):
+        value = 0.5 - (i * step)
         waveform.append(value)
-    return [-1] + waveform + [1]
-def bandlimited_waveform(sample_count: int) -> list[float]:
+
+    return waveform
+
+def interpolate(waveform_a: list[float], waveform_b: list[float], ratio: float) -> list[float]:
     """
-    Generate bandlimited square waveform using FFT
-    :param sample_count: Number of samples
-    :param frequency: Base frequency of the waveform (needed to calculate the harmonics)
+    Interpolate between two waveforms
+    :param waveform_a: First waveform
+    :param waveform_b: Second waveform
+    :param ratio: Ratio of interpolation
     :return: A list of samples between -1 and 1
     """
-    waveform = simple_waveform(sample_count)
-    wavetable = create_wavetable(waveform, 48000 / 2, levels=8)
-    last = wavetable[-1]
-    #plot
-    plt.plot(last)
-    plt.show()
-    return last
+    waveform = []
+    for i in range(len(waveform_a)):
+        value = (waveform_a[i] * (1 - ratio)) + (waveform_b[i] * ratio)
+        waveform.append(value)
+    return waveform
+
+def generate(frequency: int) -> list[float]:
+    """
+    Generate bandlimited square waveform using FFT
+    :param frequency: Frequency of the waveform (needed to calculate the removed harmonics)
+    :return: A list of samples between -1 and 1
+    """
+    waveform = simple_waveform()
+    wavetable = create_wavetable(waveform, SAMPLING_RATE, levels=8)
+    # Select correct wavetable  and interpolate
+    for i in range(len(wavetable)):
+        top_frequency = 40 * (2 ** i)
+        if frequency <= top_frequency:
+            print(f"Using wavetable {i}")
+            previous_top_frequency = 40 * (2 ** (i - 1))
+            ratio = (frequency - previous_top_frequency) / (top_frequency - previous_top_frequency)
+            return interpolate(wavetable[i-1], wavetable[i], ratio)
+
+    return wavetable[-1]
 
 
 
