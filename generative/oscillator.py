@@ -49,7 +49,7 @@ def main() -> None:
     parser = init_argparse()
     args = parser.parse_args()
 
-    sample_count = 1024
+    sample_count = 2048
 
     wavetable = []
     if args.wave == "sine":
@@ -57,7 +57,7 @@ def main() -> None:
     elif args.wave == "square":
         wavetable = square.simple_square(sample_count)
     elif args.wave == "sawtooth":
-        wavetable = sawtooth.simple_sawtooth(sample_count)
+        wavetable = sawtooth.bandlimited_waveform(sample_count)
     elif args.wave == "impulse":
         wavetable = impulse.generate_wavetable(sample_count)
     elif args.wave == "noise":
