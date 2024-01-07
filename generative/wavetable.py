@@ -1,11 +1,18 @@
 import numpy as np
 
-def bandlimit_waveform(waveform_samples, sample_rate, nyquist):
+def bandlimit_waveform(waveform_samples, sample_rate, max_harmonics):
     fft_result = np.fft.fft(waveform_samples)
     freqs = np.fft.fftfreq(len(waveform_samples), d=1/sample_rate)
 
     # Zeroing frequencies above the specified Nyquist frequency
+    print(f"Keeping harmonics up to {max_harmonics}")
+    # Remove harmonics above the max_harmonics
+    nyquist = max_harmonics * (sample_rate / 2) / len(waveform_samples)
     fft_result[np.abs(freqs) > nyquist] = 0
+    print(fft_result)
+    # filter zero values
+    #fft_temp = fft_result[np.abs(fft_result) > 0]
+    #print(f"Harmoics count after: {len(fft_temp)}")
 
     # Inverse FFT to get the time-domain waveform
     bandlimited_waveform = np.fft.ifft(fft_result)
@@ -17,11 +24,41 @@ def bandlimit_waveform(waveform_samples, sample_rate, nyquist):
 
 def create_wavetable(waveform_samples, sample_rate, levels):
     wavetable = []
-    base_nyquist = sample_rate / 2
 
+    max_harmonics = 368
     for level in range(levels):
-        nyquist = base_nyquist / (2 ** level)
-        bandlimited_waveform = bandlimit_waveform(waveform_samples, sample_rate, nyquist)
+        bandlimited_waveform = bandlimit_waveform(waveform_samples, sample_rate, max_harmonics)
         wavetable.append(bandlimited_waveform)
+        max_harmonics = max_harmonics // 2
 
     return wavetable
+
+
+def interpolate(waveform_a: list[float], waveform_b: list[float], ratio: float) -> list[float]:
+    """
+    Interpolate between two waveforms
+    :param waveform_a: First waveform
+    :param waveform_b: Second waveform
+    :param ratio: Ratio of interpolation
+    :return: A list of samples between -1 and 1
+    """
+    waveform = []
+    for i in range(len(waveform_a)):
+        value = (waveform_a[i] * (1 - ratio)) + (waveform_b[i] * ratio)
+        waveform.append(value)
+    return waveform
+
+
+def freq_waveform(frequency: int, wavetable: list[list[float]]) -> list[float]:
+    # Select correct wavetable  and interpolate
+    top_frequency = 40
+    previous_top_frequency = 40
+    for i in range(len(wavetable)):
+        if frequency <= top_frequency and i > 0:
+            return wavetable[i]
+            #ratio = (frequency - previous_top_frequency) / (top_frequency - previous_top_frequency)
+            #print(f"Interpolating between {previous_top_frequency} and {top_frequency} with ratio {ratio}")
+            #return interpolate(wavetable[i - 1], wavetable[i], ratio)
+        #previous_top_frequency = top_frequency
+        top_frequency = top_frequency * 2
+    return wavetable[-1]
