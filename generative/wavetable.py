@@ -4,15 +4,10 @@ def bandlimit_waveform(waveform_samples, sample_rate, max_harmonics):
     fft_result = np.fft.fft(waveform_samples)
     freqs = np.fft.fftfreq(len(waveform_samples), d=1/sample_rate)
 
-    # Zeroing frequencies above the specified Nyquist frequency
-    print(f"Keeping harmonics up to {max_harmonics}")
     # Remove harmonics above the max_harmonics
     nyquist = max_harmonics * (sample_rate / 2) / len(waveform_samples)
+    # Zeroing frequencies above the specified Nyquist frequency
     fft_result[np.abs(freqs) > nyquist] = 0
-    print(fft_result)
-    # filter zero values
-    #fft_temp = fft_result[np.abs(fft_result) > 0]
-    #print(f"Harmoics count after: {len(fft_temp)}")
 
     # Inverse FFT to get the time-domain waveform
     bandlimited_waveform = np.fft.ifft(fft_result)

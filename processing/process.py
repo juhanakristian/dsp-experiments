@@ -5,8 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from delay import process as delay
-from generative.envelope import process as envelope
-from generative.envelope import ADSR
+import lowpass
 
 SAMPLE_RATE = 48000
 
@@ -30,9 +29,10 @@ def main() -> None:
     args = parser.parse_args()
     sample_rate, samples = read(args.input)
 
-    if args.effect == "envelope":
-        adsr = ADSR(attack=0.1, decay=0.2, sustain=0.5, release=0.2)
-        processed_samples = np.array(envelope(samples, adsr, 3))
+    scaled_samples = np.float32(samples / 32767.0)
+
+    if args.effect == "lowpass":
+        processed_samples = np.array(lowpass.process(scaled_samples, 40.0 / SAMPLE_RATE))
     else:
         processed_samples = np.array(delay(samples, 0.4))
 
